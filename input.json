@@ -1,0 +1,84 @@
+{
+  "Cities": [
+    {
+      "label": "cA",
+      "marketMap": {
+        "G1": {
+          "demand": 10,
+          "supply": 32,
+          "production": 8,
+          "price": 100
+        },
+        "G2": {
+          "demand": 12,
+          "supply": 30,
+          "production": 15,
+          "price": 100
+        }
+      }
+    },
+    {
+      "label": "cB",
+      "marketMap": {
+        "G1": {
+          "demand": 10,
+          "supply": 32,
+          "production": 8,
+          "price": 100
+        },
+        "G2": {
+          "demand": 12,
+          "supply": 30,
+          "production": 15,
+          "price": 100
+        }
+      }
+    },
+    {
+      "label": "cC",
+      "marketMap": {
+        "G1": {
+          "demand": 15,
+          "supply": 32,
+          "production": 20,
+          "price": 100
+        },
+        "G2": {
+          "demand": 12,
+          "supply": 30,
+          "production": 5,
+          "price": 100
+        }
+      }
+    },
+    {
+      "label": "cD",
+      "marketMap": {
+        "G1": {
+          "demand": 12,
+          "supply": 32,
+          "production": 8,
+          "price": 100
+        },
+        "G2": {
+          "demand": 10,
+          "supply": 30,
+          "production": 15,
+          "price": 100
+        }
+      }
+    }
+  ],
+  "Edges": [
+    ["cA", "cB"],
+    ["cA", "cC"],
+    ["cB", "cC"],
+    ["cC", "cD"]
+  ],
+  "Agents": [
+    ["cA", 4],
+    ["cB", 2],
+    ["cC", 1],
+    ["cD", 4]
+  ]
+}
