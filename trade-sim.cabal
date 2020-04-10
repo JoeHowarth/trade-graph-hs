@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9a740c249b25d5da3f48113add8e9e57073f014a18e80ba856c3aada39197b14
+-- hash: 4cdc0cadf0bf6b4944675f2c7cf7810faf494db0f85c4649b869054afc41cd17
 
 name:           trade-sim
 version:        0.1.0.0
@@ -32,10 +32,11 @@ library
       Paths_trade_sim
   hs-source-dirs:
       src
-  default-extensions: OverloadedStrings DeriveGeneric
+  default-extensions: OverloadedStrings DeriveGeneric NamedFieldPuns GeneralizedNewtypeDeriving
   build-depends:
       aeson
     , base >=4.7 && <5
+    , bytestring
     , containers
     , fgl
   default-language: Haskell2010
@@ -46,11 +47,12 @@ executable trade-sim-exe
       Paths_trade_sim
   hs-source-dirs:
       app
-  default-extensions: OverloadedStrings DeriveGeneric
+  default-extensions: OverloadedStrings DeriveGeneric NamedFieldPuns GeneralizedNewtypeDeriving
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
     , base >=4.7 && <5
+    , bytestring
     , containers
     , fgl
     , trade-sim
@@ -63,11 +65,12 @@ test-suite trade-sim-test
       Paths_trade_sim
   hs-source-dirs:
       test
-  default-extensions: OverloadedStrings DeriveGeneric
+  default-extensions: OverloadedStrings DeriveGeneric NamedFieldPuns GeneralizedNewtypeDeriving
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
     , base >=4.7 && <5
+    , bytestring
     , containers
     , fgl
     , trade-sim

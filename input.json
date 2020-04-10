@@ -1,5 +1,5 @@
 {
-  "Cities": [
+  "cities": [
     {
       "label": "cA",
       "marketMap": {
@@ -69,13 +69,13 @@
       }
     }
   ],
-  "Edges": [
+  "edgeInput": [
     ["cA", "cB"],
     ["cA", "cC"],
     ["cB", "cC"],
     ["cC", "cD"]
   ],
-  "Agents": [
+  "agentInput": [
     ["cA", 4],
     ["cB", 2],
     ["cC", 1],

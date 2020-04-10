@@ -24,10 +24,13 @@ dependencies:
 - fgl
 - containers
 - aeson
+- bytestring
 
 default-extensions:
 - OverloadedStrings
 - DeriveGeneric
+- NamedFieldPuns
+- GeneralizedNewtypeDeriving
 
 library:
   source-dirs: src
