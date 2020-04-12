@@ -25,6 +25,9 @@ dependencies:
 - containers
 - aeson
 - bytestring
+- tasty
+- tasty-hunit
+
 
 default-extensions:
 - OverloadedStrings

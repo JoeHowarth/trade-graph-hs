@@ -1,7 +1,7 @@
 {
   "cities": [
     {
-      "label": "cA",
+      "label": "1",
       "marketMap": {
         "G1": {
           "demand": 10,
@@ -18,7 +18,7 @@
       }
     },
     {
-      "label": "cB",
+      "label": "2",
       "marketMap": {
         "G1": {
           "demand": 10,
@@ -35,7 +35,7 @@
       }
     },
     {
-      "label": "cC",
+      "label": "3",
       "marketMap": {
         "G1": {
           "demand": 15,
@@ -52,7 +52,7 @@
       }
     },
     {
-      "label": "cD",
+      "label": "4",
       "marketMap": {
         "G1": {
           "demand": 12,
@@ -70,15 +70,15 @@
     }
   ],
   "edgeInput": [
-    ["cA", "cB"],
-    ["cA", "cC"],
-    ["cB", "cC"],
-    ["cC", "cD"]
+    ["1", "2"],
+    ["1", "3"],
+    ["2", "3"],
+    ["3", "4"]
   ],
   "agentInput": [
-    ["cA", 4],
-    ["cB", 2],
-    ["cC", 1],
-    ["cD", 4]
+    ["1", 4],
+    ["2", 2],
+    ["3", 1],
+    ["4", 4]
   ]
 }
