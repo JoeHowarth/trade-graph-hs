@@ -19,10 +19,10 @@ import qualified Data.Map.Merge.Strict as M
 
 main :: IO ()
 main = do 
-    input <- readInput 
-    case input of 
-        Left err -> fail err
-        Right (Lib.InputFormat {cities, edgeInput, agentInput}) -> do
-            let g = makeGraph cities edgeInput
-            putStrLn $ G.prettify g
+  input <- readInput 
+  case input of 
+    Left err -> fail err
+    Right (Lib.InputFormat {cities, edgeInput, agentInput}) -> do
+      let g = makeGraph cities edgeInput
+      putStrLn $ G.prettify g
 
