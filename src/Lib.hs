@@ -2,7 +2,11 @@ module Lib
   ( readInput
   , makeGraph
   , bestTrade
+  , priceFunGen
   , stepAgent
+  , stepPrice
+  , stepPrices
+  , sellDelta
   , InputFormat (..)
   , City (..)
   , MarketInfo (..)
@@ -43,7 +47,7 @@ data MarketInfo = MarketInfo { demand :: Int
                              , supply :: Int 
                              , production :: Int 
                              , price :: Int 
-                             } deriving (Show, Generic)
+                             } deriving (Show, Generic, Eq, Ord)
 instance FromJSON MarketInfo
 
 data InputFormat = InputFormat { cities :: [City] 
@@ -73,19 +77,35 @@ data Loc = LCity CityLabel | LRoute CityLabel CityLabel
 loop :: ([Agent], Gr City ()) -> ([Agent], Gr City ())
 loop (agents, graph) = (agents', graph')
   where
+    agents' = stepAgent <$> agents <*> pure graph
     graph' = stepPrices agents graph
-    agents' = stepAgent <$> agents <*> pure graph'
-
 
 stepPrices :: [Agent] -> Gr City () -> Gr City ()
-stepPrices agents graph = stepCity `G.nmap` graph -- note done
+stepPrices selling graph = stepCity `G.nmap` graph -- not done
   where 
     stepCity (City {marketMap}) = undefined
+    x as = (\a -> (loc2label $ agentLoc a, agentCargo a)) <$> as 
+    loc2label (LCity label) = label
+    loc2label (LRoute _ _) = undefined
+
+
+sellDelta :: Int -> MarketInfo -> Int
+sellDelta sold info = production info - demand info + sold
+
+-- price_function factor sold, production, consumption
+stepPrice :: (Int -> Int) -> Int -> MarketInfo -> MarketInfo
+stepPrice priceFun delta info = info {price = price'}
+  where 
+    -- delta = 
+    price' = priceFun $ supply info + delta
+
+priceFunGen :: (Int,Int,Int) -> Int -> Int
+priceFunGen (s0, p0, slope) amt = slope * (amt - s0) + p0
+
 
 
 stepGood good m_info incoming leaving = undefined
 
--- 
 stepAgent :: Agent -> Gr City () -> Agent
 stepAgent (Agent {agentLoc = LCity name, agentCargo, agentId }) graph =  
   Agent (LCity dst) good agentId
