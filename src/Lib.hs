@@ -5,7 +5,8 @@ module Lib
   , priceFunGen
   , stepAgent
   , stepPrice
-  , stepPrices
+  , stepPricesBuying
+  , stepPricesSelling
   , sellDelta
   , InputFormat (..)
   , City (..)
@@ -75,18 +76,47 @@ data Loc = LCity CityLabel | LRoute CityLabel CityLabel
 
 
 loop :: ([Agent], Gr City ()) -> ([Agent], Gr City ())
-loop (agents, graph) = (agents', graph')
+loop (selling, graph) = (buying, graph'')
   where
-    agents' = stepAgent <$> agents <*> pure graph
-    graph' = stepPrices agents graph
+    graph' = stepPricesSelling sellDelta priceF (toMap selling) graph
+    buying = stepAgent <$> selling <*> pure graph'
+    graph'' = stepPricesBuying priceF (toMap buying) graph
 
-stepPrices :: [Agent] -> Gr City () -> Gr City ()
-stepPrices selling graph = stepCity `G.nmap` graph -- not done
-  where 
-    stepCity (City {marketMap}) = undefined
-    x as = (\a -> (loc2label $ agentLoc a, agentCargo a)) <$> as 
-    loc2label (LCity label) = label
+    priceF = priceFunGen (100, 100, 1)
+    toMap xs = M.fromList $ fmap (\a -> (loc2label $ agentLoc a, [a])) xs 
+    loc2label (LCity loc) = loc
     loc2label (LRoute _ _) = undefined
+
+
+stepPricesBuying
+  :: (Int -> Int)
+  -> Map CityLabel [Agent]
+  -> Gr City () 
+  -> Gr City ()
+stepPricesBuying priceF buying graph = stepCity `G.nmap` graph -- not done
+  where 
+    stepCity city@(City {marketMap, label}) = city {marketMap = newMap}
+      where
+        agents = buying M.! label
+        good2Agent = M.fromListWith (++) $ (\a -> (agentCargo a, [a])) <$> agents
+        zipped = (\(k, v) -> (k, (v, length $ fromMaybe [] $ good2Agent M.!? k))) <$> M.toAscList marketMap
+        newMap = M.fromAscList $ (\(g, (m, s)) -> (g, stepPrice priceF (-s) m)) <$> zipped 
+        
+stepPricesSelling 
+  :: (Int -> MarketInfo -> Int) 
+  -> (Int -> Int)
+  -> Map CityLabel [Agent]
+  -> Gr City () 
+  -> Gr City ()
+stepPricesSelling deltaF priceF selling graph = stepCity `G.nmap` graph -- not done
+  where 
+    stepCity city@(City {marketMap, label}) = city {marketMap = newMap}
+      where
+        agents = selling M.! label
+        good2Agent = M.fromListWith (++) $ (\a -> (agentCargo a, [a])) <$> agents
+        zipped = (\(k, v) -> (k, (v, length $ fromMaybe [] $ good2Agent M.!? k))) <$> M.toAscList marketMap
+        newMap = M.fromAscList $ (\(g, (m, s)) -> (g, stepPrice priceF (sellDelta s m) m)) <$> zipped 
+
 
 
 sellDelta :: Int -> MarketInfo -> Int
