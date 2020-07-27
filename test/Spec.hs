@@ -24,8 +24,10 @@ tests = testGroup "Tests"
   [ agentStepTests
   , makeGraphTests
   , priceTests
+  , stepCityTests
   ]
 
+priceTests :: TestTree
 priceTests = testGroup "Test price functions"
   [ testCase "sellDelta simple" $
       sellDelta 2 mInfo1 @?= 0
@@ -56,6 +58,7 @@ sameElems as bs =
   let aSet = S.fromList as
   in all (flip S.member aSet) bs
 
+makeGraphTests :: TestTree
 makeGraphTests = testGroup "Test making graph"
   [ testCase "simple graph undirected" $ 
       gAll inEqualOut graph1 
@@ -75,16 +78,12 @@ mmFromGPpairs xs = M.fromList $ bimap Good (flip (set price) base) <$> xs
   where 
     base = MarketInfo 0 0 0 0 
 
-mm1 = mmFromGPpairs [("A", 5), ("B", 4), ("C", 7)]
-mm2 = mmFromGPpairs [("A", 3), ("B", 6), ("C", 4)]
-city1 = City (CityLabel 1) mm1
-city2 = City (CityLabel 2) mm2
-graph1 :: Gr City ()
-graph1 = makeGraph [city1, city2] [(CityLabel 1, CityLabel 2)]
 
 
+mkAgent :: Int -> String -> Int -> Agent
 mkAgent node good id = Agent (LCity $ CityLabel node) (Good good) id
 
+agentStepTests :: TestTree
 agentStepTests = testGroup "Agent step related tests"
   [ testCase "bestTrade1" $ bestTrade mm1 mm2 @?= (2, Good "B")
   , testCase "bestTrade2" $ bestTrade mm2 mm1 @?= (3, Good "C")
@@ -93,3 +92,44 @@ agentStepTests = testGroup "Agent step related tests"
   , testCase "stepAgent, 2 city" $ stepAgent (mkAgent 2 "A" 0) graph1 @?= mkAgent 1 "C" 0
   ]
 
+stepCityTests :: TestTree
+stepCityTests = testGroup "stepCity: how a city updates prices from buying and selling"
+  [ testCase "no agents" $ stepCity priceF [] city1  @?= (city1 & marketMap .~ mm3)
+
+  ]
+  where priceF = stepPrice $ priceFunGen (100, 50, 1)
+
+-------------------------------- test values ------------------------------------
+
+goodA :: Good
+goodA = Good "A"
+
+goodB :: Good
+goodB = Good "B" :: Good
+
+mm1 :: MarketMap
+mm1 = mmFromGPpairs [("A", 5), ("B", 4), ("C", 7)]
+
+mm2 :: MarketMap
+mm2 = mmFromGPpairs [("A", 3), ("B", 6), ("C", 4)]
+
+mm3 :: Map Good MarketInfo
+mm3 = M.fromList [(goodA, MarketInfo 20 100 10 50), (goodB, MarketInfo 30 200 40 50)]
+
+mm4 :: Map Good MarketInfo
+mm4 = M.fromList [(goodA, MarketInfo 20 100 10 47), (goodB, MarketInfo 30 200 40 49)]
+
+city1 :: City
+city1 = City (CityLabel 1) mm1
+
+city2 :: City
+city2 = City (CityLabel 2) mm2
+
+city3 :: MarketMap -> City
+city3 = City (CityLabel 3) 
+
+graph1 :: Gr City ()
+graph1 = makeGraph [city1, city2] [(CityLabel 1, CityLabel 2)]
+
+agentsSameCity :: [Agent]
+agentsSameCity = [mkAgent 1 "A" 0, mkAgent 1 "A" 1, mkAgent 1 "A" 2, mkAgent 1 "B" 3]

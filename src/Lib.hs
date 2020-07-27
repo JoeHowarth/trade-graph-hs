@@ -3,8 +3,7 @@ module Lib
   , priceFunGen
   , stepAgent
   , stepPrice
-  , stepPricesBuying
-  , stepPricesSelling
+  , stepCity
   , sellDelta
   , loop
   -- , InputFormat (..) -- , City (..) -- , label, marketMap -- , MarketInfo (..) -- , demand, supply, production, price -- , Good (..) -- , unGood -- , CityLabel (..) -- , unCityLabel -- , MarketMap -- , Agent (..) -- , agentCargo, agentLoc, agentId -- , Loc (..)
@@ -33,47 +32,33 @@ import Data.Graph.Inductive.PatriciaTree (Gr)
 
 
 loop :: ([Agent], Gr City ()) -> ([Agent], Gr City ())
-loop (selling, graph) = (buying, graph'')
+loop (selling, graph) = (buying, nextGraph)
   where
-    graph' = stepPricesSelling priceF (toMap selling) graph
-    buying = stepAgent <$> selling <*> pure graph'
-    graph'' = stepPricesBuying priceF (toMap buying) graph
+    graphAfterSelling = stepPrices (stepPrice priceF) (toMap selling) graph
+    buying = stepAgent <$> selling <*> pure graphAfterSelling
+    nextGraph = stepPrices (\bought -> stepPrice priceF (-bought)) (toMap buying) graphAfterSelling
+    --
     priceF = priceFunGen (100, 100, 1)
-    toMap xs = M.fromList $ fmap (\a -> (a ^. agentLoc & loc2label, [a])) xs 
-    loc2label (LCity loc) = loc
-    loc2label (LRoute _ _) = undefined
+    toMap xs = M.fromList $ ((loc2label . view agentLoc) &&& pure) <$> xs :: Map CityLabel [Agent]
 
-
-stepPricesBuying
-  :: (Int -> Int)
+stepPrices :: (Int -> MarketInfo -> MarketInfo) 
   -> Map CityLabel [Agent]
-  -> Gr City () 
   -> Gr City ()
-stepPricesBuying priceF buying graph = stepCity `G.nmap` graph -- not done
-  where 
-    stepCity city = city & marketMap %~ M.mapWithKey inner 
-      where
-        agents = buying ^.. at (city ^. label) . folded . folded . to (\a -> (a ^. agentCargo, [a]))
-        good2Agent = M.fromListWith (++) agents
-        numBuying good = lengthOf (at good . non []) good2Agent
-        inner g m1 = stepPrice priceF (-(numBuying g)) m1
-        
-stepPricesSelling 
-  :: (Int -> Int)
-  -> Map CityLabel [Agent]
-  -> Gr City () 
   -> Gr City ()
-stepPricesSelling priceF selling graph = stepCity `G.nmap` graph -- not done
+stepPrices stepPriceF agentMap = G.nmap (\city -> stepCity stepPriceF (agentsInCity city) city) 
   where 
-    stepCity city@(City {_marketMap, _label}) = city & marketMap %~ M.mapWithKey inner
-      where
-        agents = selling ^.. at (city ^. label) . folded . folded . to (\a -> (a ^. agentCargo, [a]))
-        good2Agent = M.fromListWith (++) agents
-        numBuying good = lengthOf (at good . non []) good2Agent
-        inner g m1 = stepPrice priceF (numBuying g) m1
+    agentsInCity city = fromMaybe [] $ M.lookup (city^.label) agentMap 
 
-stepCity :: (Int -> Int) -> [Agent] -> City -> City
-stepCity priceF selling city = undefined
+    
+stepCity :: (Int -> MarketInfo -> MarketInfo) 
+  -> [Agent] 
+  -> City 
+  -> City
+stepCity stepPriceF agentsInCity city = city & marketMap %~ M.mapWithKey stepGood
+  where
+    good2Agent = M.fromListWith (++) $ (view agentCargo &&& pure) <$> agentsInCity :: Map Good [Agent]
+    numSelling good = fromMaybe 0 $ length <$> M.lookup good good2Agent 
+    stepGood good mm = stepPriceF (numSelling good) mm
 
 sellDelta :: Int -> MarketInfo -> Int
 sellDelta sold info = info^.production - info^.demand + sold
@@ -87,8 +72,6 @@ priceFunGen (s0, p0, slope) amt = slope * (amt - s0) + p0
 
 -- costToBuy :: Fractional a => (a -> a) -> a -> a
 -- costToBuy priceF amt = amt * (priceF $ amt/2)
-
-stepGood good m_info incoming leaving = undefined
 
 stepAgent :: Agent -> Gr City () -> Agent
 stepAgent agent g = agent & agentCargo .~ good & agentLoc .~ LCity dst

@@ -8,7 +8,7 @@ module Types
   , Good(..), unGood
   , CityLabel(..), unCityLabel
   , Agent(..), agentLoc, agentCargo, agentId, agentSrc , agentSrcNode
-  , Loc(..)
+  , Loc(..), loc2label
   ) where
 
 import qualified GHC.Generics as Gen
@@ -22,7 +22,7 @@ import qualified Data.Graph.Inductive as G
 
 data City = City { _label :: CityLabel
                  , _marketMap :: MarketMap 
-                 } deriving (Show, Gen.Generic, Data)
+                 } deriving (Show, Gen.Generic, Data, Eq)
 
 type MarketMap = Map Good MarketInfo
 
@@ -71,3 +71,7 @@ agentSrc = lens getter setter
 
 agentSrcNode :: Lens' Agent G.Node
 agentSrcNode = agentSrc . unCityLabel
+
+loc2label :: Loc -> CityLabel
+loc2label (LCity loc) = loc
+loc2label (LRoute _ _) = undefined
