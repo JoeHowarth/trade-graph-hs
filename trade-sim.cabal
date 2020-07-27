@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.2.
+-- This file has been generated from package.yaml by hpack version 0.33.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f1ec928e06ce8216b6d2fbf1b441561b2f8d5513dbd67676dfb47915e46383e9
+-- hash: 1064250041da935b644467f38b4bc0cb223fc42503ad622e28b4d5d858d53e9c
 
 name:           trade-sim
 version:        0.1.0.0
@@ -28,6 +28,9 @@ source-repository head
 library
   exposed-modules:
       Lib
+      Load
+      Types
+      Util
   other-modules:
       Paths_trade_sim
   hs-source-dirs:
